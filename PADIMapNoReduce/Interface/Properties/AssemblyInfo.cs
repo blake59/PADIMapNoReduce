@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("PADIMapNoReduce")]
+[assembly: AssemblyTitle("Interface")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("PADIMapNoReduce")]
+[assembly: AssemblyProduct("Interface")]
 [assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("048f6041-1029-44c1-a71f-642ddbe3795c")]
+[assembly: Guid("3f0575d1-c998-4dd8-9d0f-cf7fbbbcf221")]
 
 // Version information for an assembly consists of the following four values:
 //

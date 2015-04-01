@@ -48,8 +48,8 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PADIMapNoReduce\Interface.csproj">
-      <Project>{9baa8a76-552b-4577-a132-bf6f216b4f32}</Project>
+    <ProjectReference Include="..\Interface\Interface.csproj">
+      <Project>{6147e8a6-e8bd-45cf-8a07-0e5a4819d273}</Project>
       <Name>Interface</Name>
     </ProjectReference>
   </ItemGroup>
