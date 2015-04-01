@@ -46,7 +46,7 @@
   <ItemGroup>
     <Compile Include="IMapper.cs" />
     <Compile Include="JobTracker.cs" />
-    <Compile Include="UserApplication.cs" />
+    <Compile Include="Client.cs" />
     <Compile Include="Worker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
