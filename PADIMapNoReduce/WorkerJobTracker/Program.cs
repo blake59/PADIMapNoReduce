@@ -11,7 +11,8 @@ namespace WorkerJobTracker
     {
         static void Main(string[] args)
         {
-
+            Console.WriteLine("Worker started");
+            Console.ReadLine();
         }
 
     }
