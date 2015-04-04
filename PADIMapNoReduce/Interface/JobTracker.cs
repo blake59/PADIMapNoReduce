@@ -9,7 +9,7 @@ namespace PADIMapNoReduce
     public interface JobTracker
     {
         // Client calls to give a job to the jobTracker
-        void startJob( int totalSplit, IMapper mapper, string clientURL, int totalBytes);
+        void startJob(int totalSplit, string mapperClassName, Byte[] dll, string clientURL, int totalBytes);
 
         // Worker calls to get work from the JobTracker
         // return is int[3] where 0 - start, 1 - end 2 - splitnumber

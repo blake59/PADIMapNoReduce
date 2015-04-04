@@ -12,10 +12,10 @@ namespace PADIMapNoReduce
         // WARNING: cliente precisa de passar linhas inteiras
         byte[] getFileSplit(int startFile, int endFile);  
 
-        // Worker calls to give the cliente the processed split
+        // Worker calls to give the client the processed split
         bool receiveProcessedSplit( int split, byte[] file);
 
-        // JobTracker calls to tell the cliente the job is done
+        // JobTracker calls to tell the client the job is done
         void jobDone();
     }
 }
