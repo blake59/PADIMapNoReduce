@@ -9,7 +9,7 @@ namespace PADIMapNoReduce
     public interface Worker
     {
         // JobTracker calls to inform the worker he can ask for work
-        void workAvailable(string clientURL, IMapper mapper);
+        void workAvailable(string clientURL, string mapperClassName, byte[] dll);
 
         //  JobTracker calls to inform the worker that there is no more work
         void workNotAvailable();
