@@ -15,15 +15,51 @@ namespace WorkerJobTracker
     {
         static void Main(string[] args)
         {
-            TcpChannel clientChannel = new TcpChannel(30001);
+            if (args == null || args.Length < 2)
+            {
+                Console.WriteLine("Error: Not Enough Args");
+                Console.ReadLine();
+                return;
+            }
+            int id = Int32.Parse(args[0]);
+            string serviceURL = args[1];
+            bool isFirst = true;
+            string JTURL = "";
+
+            if (args.Length > 2)
+            {
+                isFirst = false;
+                JTURL = args[2];
+            }
+            // Get Port
+            char[] delimiters = { ':', '/' };
+            string[] aux = serviceURL.Split(delimiters);
+            int port = Int32.Parse(aux[4]);
+            string serviceName = aux[5];
+
+            TcpChannel clientChannel = new TcpChannel(port);
 
             ChannelServices.RegisterChannel(clientChannel,false);
 
+            /*
             RemotingConfiguration.RegisterWellKnownServiceType(
             typeof(WorkerJobTracker), "W",
             WellKnownObjectMode.Singleton);
+            */
 
+            WorkerJobTracker WJT;
+
+            if (isFirst)
+                WJT = new WorkerJobTracker(id, serviceURL);
+            else
+                WJT = new WorkerJobTracker(id, serviceURL, JTURL);
+
+
+            RemotingServices.Marshal(WJT, serviceName);
+            
             Console.WriteLine("Worker started");
+            WJT.start();
+            
             Console.ReadLine();
         }
 

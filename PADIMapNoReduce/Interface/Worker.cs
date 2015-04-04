@@ -17,4 +17,9 @@ namespace PADIMapNoReduce
         // prints to the console the status
         void workerStatus();
     }
+
+    public interface WorkerJobTracker : Worker, JobTracker
+    {
+
+    }
 }
