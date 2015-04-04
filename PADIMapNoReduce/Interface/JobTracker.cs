@@ -8,6 +8,9 @@ namespace PADIMapNoReduce
 {
     public interface JobTracker
     {
+        // Worker calls to tell the JobTracker he was created
+        void addWorker(int id, string workerURL);
+
         // Client calls to give a job to the jobTracker
         void startJob(int totalSplit, string mapperClassName, Byte[] dll, string clientURL, int totalBytes);
 
