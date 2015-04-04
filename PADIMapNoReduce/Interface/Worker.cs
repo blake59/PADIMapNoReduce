@@ -15,6 +15,6 @@ namespace PADIMapNoReduce
         void workNotAvailable();
 
         // prints to the console the status
-        void status();
+        void workerStatus();
     }
 }
