@@ -59,17 +59,6 @@ namespace PuppetMaster
                     parseLine(filelines[a].Trim());
                     
                 }
-
-                
-                //Test to see if it works
-                /*foreach (Employee emp in employeeList)
-                {
-                    MessageBox.Show(emp.EmployeeNum + Environment.NewLine +
-                        emp.Name + Environment.NewLine +
-                        emp.Address + Environment.NewLine +
-                        emp.Wage + Environment.NewLine +
-                        emp.Hours + Environment.NewLine);
-                }*/
             }
         }
 
@@ -93,13 +82,14 @@ namespace PuppetMaster
                         }
                     break;
                 case "SUBMIT":
-                    if (splitLines.Length != 6)
+                    if (splitLines.Length != 7)
                         AddToLog("Invalid Command: " + line);
                     else
                         try
                         {
                         submitCmd(splitLines[1], splitLines[2],
-                            splitLines[3], Convert.ToInt32(splitLines[4]), splitLines[5]);
+                            splitLines[3], Convert.ToInt32(splitLines[4]), 
+                            splitLines[5], splitLines[6]);
                         }
                         catch (FormatException e)
                         {
@@ -221,9 +211,11 @@ namespace PuppetMaster
             //TODO add code here
         }
 
-        private void submitCmd(string entryUrl, String file, String output, int splitsNumber, String mapClass)
+        private void submitCmd(string entryUrl, string file, string output, int splitsNumber, 
+                               string mapClass, string dllPath)
         {
-            String command = "SUBMIT " + entryUrl + " " + file + " " + output + " " + splitsNumber + " " + mapClass;
+            String command = "SUBMIT " + entryUrl + " " + file + " " + output + " " + 
+                              splitsNumber + " " + mapClass + " " + dllPath;
             AddToLog(command);
             
             //TODO add code here
