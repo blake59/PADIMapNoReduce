@@ -35,7 +35,7 @@ namespace PuppetMaster
     {
         private static int LOG_MAX_LINES = 25;
         private static string PUPPETMASTERURL;
-        private static int PORT;
+        private static int PORT=20001;
         private TcpChannel channel;
         private PMaster puppetMaster;
 
@@ -58,6 +58,7 @@ namespace PuppetMaster
         public PuppetMasterForm()
         {
             InitializeComponent();
+            portTB.Text = Convert.ToString(PORT);
             AddToLog("Welcome to PuppetMaster");
             AddToLog("Please insert a valid Port Number to start");
             
