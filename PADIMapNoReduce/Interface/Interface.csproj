@@ -47,7 +47,7 @@
     <Compile Include="IMapper.cs" />
     <Compile Include="JobTracker.cs" />
     <Compile Include="Client.cs" />
-    <Compile Include="PuppetMaster.cs" />
+    <Compile Include="IPuppetMaster.cs" />
     <Compile Include="Worker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -9,6 +9,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+
+using System.Runtime.Remoting;
+using System.Runtime.Remoting.Channels;
+using System.Runtime.Remoting.Channels.Tcp;
+using System.Net;
+using System.Net.Sockets;
+using PADIMapNoReduce;
+
 /*
 using System.Diagnostics;
  *           CAN USE TO CREATE A NEW WORKER PROCESS
@@ -20,15 +28,45 @@ using System.Diagnostics;
 */
 namespace PuppetMaster
 {
+   
+
     public partial class PuppetMasterForm : Form
     {
         private static int LOG_MAX_LINES = 25;
         private static string PUPPETMASTERURL = "192.169.1.1"; //TODO change this url
+        private TcpChannel channel;
+        private PMaster puppetMaster;
+
+        // Returns IP ( not the street IP)
+        public static string getIP()
+        {
+            IPHostEntry host;
+            string localIP = "?";
+            host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (IPAddress ip in host.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    localIP = ip.ToString();
+                }
+            }
+            return localIP;
+        }
+
         public PuppetMasterForm()
         {
             InitializeComponent();
-            puppetMasterTB.Text = PUPPETMASTERURL;
             AddToLog("Welcome to PuppetMaster");
+
+            int porto = 20001;
+            channel = new TcpChannel(porto);
+            ChannelServices.RegisterChannel(channel, false);
+            PUPPETMASTERURL = "tcp://" + getIP() + ":"+porto+"/PM";
+            puppetMaster = new PMaster(PUPPETMASTERURL);
+
+            RemotingServices.Marshal(puppetMaster, "PM");
+            puppetMasterTB.Text = PUPPETMASTERURL;
+            AddToLog("PuppetMasterService registered at:"+PUPPETMASTERURL);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -68,15 +106,19 @@ namespace PuppetMaster
             switch (splitLines[0])
             {
                 case "WORKER":
-                    if (splitLines.Length != 5)
+                    if ((splitLines.Length != 5) || (splitLines.Length != 4))
                         AddToLog("Invalid Command: " + line);
                     else
                         try
                         {
-                          workerCmd(Convert.ToInt32(splitLines[1]), splitLines[2],
+                          if(splitLines.Length == 5)
+                              workerCmd(Convert.ToInt32(splitLines[1]), splitLines[2],
                                     splitLines[3], splitLines[4]);
+                          else
+                              workerCmd(Convert.ToInt32(splitLines[1]), splitLines[2],
+                                    splitLines[3]);
                         }
-                        catch (FormatException e)
+                        catch (FormatException)
                         {
                             AddToLog("Invalid Command: " + line);
                         }
@@ -91,7 +133,7 @@ namespace PuppetMaster
                             splitLines[3], Convert.ToInt32(splitLines[4]), 
                             splitLines[5], splitLines[6]);
                         }
-                        catch (FormatException e)
+                        catch (FormatException)
                         {
                             AddToLog("Invalid Command: " + line);
                         }
@@ -103,7 +145,7 @@ namespace PuppetMaster
                         try{
                         waitCmd(Convert.ToInt32(splitLines[1]));
                         }
-                        catch (FormatException e)
+                        catch (FormatException)
                         {
                             AddToLog("Invalid Command: " + line);
                         }
@@ -121,7 +163,7 @@ namespace PuppetMaster
                         try { 
                             slowwCmd(Convert.ToInt32(splitLines[1]), Convert.ToInt32(splitLines[2]));
                         }
-                        catch (FormatException e)
+                        catch (FormatException)
                         {
                             AddToLog("Invalid Command: " + line);
                         }
@@ -133,7 +175,7 @@ namespace PuppetMaster
                         try { 
                             freezewCmd(Convert.ToInt32(splitLines[1]));
                         }
-                        catch (FormatException e)
+                        catch (FormatException)
                         {
                             AddToLog("Invalid Command: " + line);
                         }
@@ -145,7 +187,7 @@ namespace PuppetMaster
                         try { 
                             unfreezewCmd(Convert.ToInt32(splitLines[1]));
                         }
-                        catch (FormatException e)
+                        catch (FormatException)
                         {
                             AddToLog("Invalid Command: " + line);
                         }
@@ -157,7 +199,7 @@ namespace PuppetMaster
                         try { 
                             freezecCmd(Convert.ToInt32(splitLines[1]));
                         }
-                        catch (FormatException e)
+                        catch (FormatException)
                         {
                             AddToLog("Invalid Command: " + line);
                         }
@@ -169,7 +211,7 @@ namespace PuppetMaster
                         try { 
                             unfreezecCmd(Convert.ToInt32(splitLines[1]));
                         }
-                        catch (FormatException e)
+                        catch (FormatException)
                         {
                             AddToLog("Invalid Command: " + line);
                         }
@@ -204,11 +246,26 @@ namespace PuppetMaster
         }
 
         /* PuppetMaster Available Commands */
+        private void workerCmd(int id, string puppetUrl, string serviceUrl)
+        {
+            String command = "WORKER " + id + " " + puppetUrl + " " + serviceUrl;
+
+            //TODO add code here
+            IPuppetMaster pm = (IPuppetMaster)Activator.GetObject(typeof(IPuppetMaster), puppetUrl);
+            if (pm.createWorker(id, serviceUrl)) AddToLog(command);
+            else AddToLog("Invalid Command: " + command);
+
+        }
+
         private void workerCmd(int id, string puppetUrl, string serviceUrl, string entryUrl)
         {
             String command = "WORKER " + id + " " + puppetUrl + " " + serviceUrl + " " + entryUrl;
-            AddToLog(command);
+         
             //TODO add code here
+            IPuppetMaster pm = (IPuppetMaster)Activator.GetObject(typeof(IPuppetMaster), puppetUrl);
+            if (pm.createWorker(id, serviceUrl, entryUrl)) AddToLog(command);
+            else AddToLog("Invalid Command: " + command);
+            
         }
 
         private void submitCmd(string entryUrl, string file, string output, int splitsNumber, 
