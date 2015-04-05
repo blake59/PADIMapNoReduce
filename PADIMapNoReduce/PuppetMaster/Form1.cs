@@ -38,6 +38,7 @@ namespace PuppetMaster
         private static int PORT=20001;
         private TcpChannel channel;
         private PMaster puppetMaster;
+        private string jobTrackerUrl;
 
         // Returns IP ( not the street IP)
         public static string getIP()
@@ -245,6 +246,7 @@ namespace PuppetMaster
         {
             String command = "WORKER " + id + " " + puppetUrl + " " + serviceUrl;
 
+            jobTrackerUrl = serviceUrl;
             //TODO add code here
             IPuppetMaster pm = (IPuppetMaster)Activator.GetObject(typeof(IPuppetMaster), puppetUrl);
             if (pm.createWorker(id, serviceUrl)) AddToLog(command);
