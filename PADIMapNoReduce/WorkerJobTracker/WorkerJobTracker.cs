@@ -223,7 +223,6 @@ namespace WorkerJobTracker
             string[] lines = bytesToLines(fileSplit);
             foreach (string line in lines)
             {
-                Console.WriteLine(line);
                 object[] args = new object[] { line };
                 object resultObject = type.InvokeMember("Map",
                   BindingFlags.Default | BindingFlags.InvokeMethod,
