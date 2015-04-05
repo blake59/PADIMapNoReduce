@@ -96,8 +96,8 @@ namespace UserApplication
             
             if (!splitsDone[split])
             {
-                File.WriteAllBytes(outputFile + split + ".out", file);
                 splitsDone[split] = true;
+                File.WriteAllBytes(outputFile + split + ".out", file);
                 Console.WriteLine("Client: ReceiveProcessedSplit:" + split);
             }
 
