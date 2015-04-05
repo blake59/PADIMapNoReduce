@@ -39,12 +39,14 @@
             this.infoLbl = new System.Windows.Forms.Label();
             this.infoLB = new System.Windows.Forms.ListBox();
             this.label3 = new System.Windows.Forms.Label();
+            this.PortLbl = new System.Windows.Forms.Label();
+            this.portTB = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(3, 50);
+            this.label1.Location = new System.Drawing.Point(3, 69);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(95, 13);
             this.label1.TabIndex = 0;
@@ -52,7 +54,8 @@
             // 
             // puppetMasterTB
             // 
-            this.puppetMasterTB.Location = new System.Drawing.Point(104, 47);
+            this.puppetMasterTB.Enabled = false;
+            this.puppetMasterTB.Location = new System.Drawing.Point(104, 66);
             this.puppetMasterTB.Name = "puppetMasterTB";
             this.puppetMasterTB.Size = new System.Drawing.Size(212, 20);
             this.puppetMasterTB.TabIndex = 1;
@@ -60,8 +63,7 @@
             // 
             // puppetMasterUrlBtn
             // 
-            this.puppetMasterUrlBtn.Enabled = false;
-            this.puppetMasterUrlBtn.Location = new System.Drawing.Point(322, 45);
+            this.puppetMasterUrlBtn.Location = new System.Drawing.Point(322, 37);
             this.puppetMasterUrlBtn.Name = "puppetMasterUrlBtn";
             this.puppetMasterUrlBtn.Size = new System.Drawing.Size(53, 23);
             this.puppetMasterUrlBtn.TabIndex = 2;
@@ -150,11 +152,29 @@
             this.label3.Text = "General";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // PortLbl
+            // 
+            this.PortLbl.AutoSize = true;
+            this.PortLbl.Location = new System.Drawing.Point(72, 45);
+            this.PortLbl.Name = "PortLbl";
+            this.PortLbl.Size = new System.Drawing.Size(26, 13);
+            this.PortLbl.TabIndex = 11;
+            this.PortLbl.Text = "Port";
+            // 
+            // portTB
+            // 
+            this.portTB.Location = new System.Drawing.Point(104, 40);
+            this.portTB.Name = "portTB";
+            this.portTB.Size = new System.Drawing.Size(212, 20);
+            this.portTB.TabIndex = 12;
+            // 
             // PuppetMasterForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(386, 298);
+            this.Controls.Add(this.portTB);
+            this.Controls.Add(this.PortLbl);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.infoLB);
             this.Controls.Add(this.infoLbl);
@@ -188,6 +208,8 @@
         private System.Windows.Forms.Label infoLbl;
         private System.Windows.Forms.ListBox infoLB;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label PortLbl;
+        private System.Windows.Forms.TextBox portTB;
     }
 }
 

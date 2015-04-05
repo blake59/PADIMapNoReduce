@@ -16,6 +16,7 @@ using System.Runtime.Remoting.Channels.Tcp;
 using System.Net;
 using System.Net.Sockets;
 using PADIMapNoReduce;
+using System.Diagnostics;
 
 /*
 using System.Diagnostics;
@@ -33,7 +34,8 @@ namespace PuppetMaster
     public partial class PuppetMasterForm : Form
     {
         private static int LOG_MAX_LINES = 25;
-        private static string PUPPETMASTERURL = "192.169.1.1"; //TODO change this url
+        private static string PUPPETMASTERURL;
+        private static int PORT;
         private TcpChannel channel;
         private PMaster puppetMaster;
 
@@ -57,16 +59,8 @@ namespace PuppetMaster
         {
             InitializeComponent();
             AddToLog("Welcome to PuppetMaster");
-
-            int porto = 20001;
-            channel = new TcpChannel(porto);
-            ChannelServices.RegisterChannel(channel, false);
-            PUPPETMASTERURL = "tcp://" + getIP() + ":"+porto+"/PM";
-            puppetMaster = new PMaster(PUPPETMASTERURL);
-
-            RemotingServices.Marshal(puppetMaster, "PM");
-            puppetMasterTB.Text = PUPPETMASTERURL;
-            AddToLog("PuppetMasterService registered at:"+PUPPETMASTERURL);
+            AddToLog("Please insert a valid Port Number to start");
+            
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -106,7 +100,7 @@ namespace PuppetMaster
             switch (splitLines[0])
             {
                 case "WORKER":
-                    if ((splitLines.Length != 5) || (splitLines.Length != 4))
+                    if ((splitLines.Length != 5) && (splitLines.Length != 4))
                         AddToLog("Invalid Command: " + line);
                     else
                         try
@@ -274,8 +268,12 @@ namespace PuppetMaster
             String command = "SUBMIT " + entryUrl + " " + file + " " + output + " " + 
                               splitsNumber + " " + mapClass + " " + dllPath;
             AddToLog(command);
-            
-            //TODO add code here
+
+            Process worker = new Process();
+            worker.StartInfo.FileName = "..\\..\\..\\UserApplication\\bin\\Debug\\UserApplication.exe";
+            worker.StartInfo.Arguments = entryUrl+" "+file+" "+output+" "+
+                                         splitsNumber+" "+mapClass+" "+dllPath;
+            worker.Start();
         }
 
         private void waitCmd(int secs)
@@ -334,17 +332,31 @@ namespace PuppetMaster
 
         private void puppetMasterTB_TextChanged(object sender, EventArgs e)
         {
-            puppetMasterUrlBtn.Enabled = true;
         }
 
         private void puppetMasterUrlBtn_Click(object sender, EventArgs e)
         {
-            if (puppetMasterTB.Text != null && puppetMasterTB.Text != "")
+            if (portTB.Text != null && portTB.Text != "")
             {
-                PUPPETMASTERURL = puppetMasterTB.Text;
-                puppetMasterUrlBtn.Enabled = false;
-                AddToLog("PuppetMaster URL changed to: " + PUPPETMASTERURL);
-                //TODO add code here to change puppetmasterurl if it's possible
+                try
+                {
+                    PORT = Convert.ToInt32(portTB.Text);
+                    puppetMasterUrlBtn.Enabled = false;
+                    PUPPETMASTERURL = puppetMasterTB.Text;
+
+                    channel = new TcpChannel(PORT);
+                    ChannelServices.RegisterChannel(channel, false);
+                    PUPPETMASTERURL = "tcp://" + getIP() + ":" + PORT + "/PM";
+                    puppetMaster = new PMaster(PUPPETMASTERURL);
+
+                    RemotingServices.Marshal(puppetMaster, "PM");
+                    puppetMasterTB.Text = PUPPETMASTERURL;
+                    AddToLog("PuppetMasterService registered at:" + PUPPETMASTERURL);
+                }
+                catch (FormatException)
+                {
+                    AddToLog("Invalid Port: " + portTB.Text);
+                }
             }
         }
     }
