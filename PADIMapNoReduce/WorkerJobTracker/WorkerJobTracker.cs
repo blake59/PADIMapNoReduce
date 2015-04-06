@@ -167,6 +167,12 @@ namespace WorkerJobTracker
             if (!isJT)
                 return;
             Console.WriteLine("Job Tracker Status");
+            Console.WriteLine("Workers Active:" + workers.Count);
+            
+            foreach (WorkerJobTracker w in workers.Values)
+            {
+                w.workerStatus();
+            }
         }
 
         //
