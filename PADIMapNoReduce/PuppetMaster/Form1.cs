@@ -290,6 +290,7 @@ namespace PuppetMaster
         {
             String command = "STATUS";
             AddToLog(command);
+            ((WorkerJobTracker)Activator.GetObject(typeof(WorkerJobTracker), jobTrackerUrl)).status();
             //TODO add code here
         }
 
