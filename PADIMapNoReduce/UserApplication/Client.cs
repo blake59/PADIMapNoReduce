@@ -91,13 +91,22 @@ namespace UserApplication
         }
 
         // Worker calls to give the client the processed split
-        public bool receiveProcessedSplit(int split, byte[] file)
+        public bool receiveProcessedSplit(int split, List<IList<KeyValuePair<string, string>>> file)
         {
             
             if (!splitsDone[split])
             {
                 splitsDone[split] = true;
-                File.WriteAllBytes(outputFile + split + ".out", file);
+                System.IO.StreamWriter filewriter = new System.IO.StreamWriter(outputFile + split + ".out");
+                foreach (IList<KeyValuePair<string, string>> list in file)
+                {
+                    foreach (KeyValuePair<string, string> pair in list)
+                    {
+                        filewriter.WriteLine(pair.Key + " " + pair.Value);
+                    }
+                }
+                filewriter.Close();
+                //File.WriteAllBytes(outputFile + split + ".out", file);
                 Console.WriteLine("Client: ReceiveProcessedSplit:" + split);
             }
 

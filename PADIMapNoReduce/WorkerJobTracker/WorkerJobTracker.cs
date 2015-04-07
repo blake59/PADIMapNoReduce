@@ -212,7 +212,7 @@ namespace WorkerJobTracker
 
                     workStatus = PROCESSINGFILE;
                     Console.WriteLine("Processing:" + workInfo[2]);
-                    byte[] result = processSplit(fileSplit);
+                    List<IList<KeyValuePair<string, string>>> result = processSplit(fileSplit);
 
                     workStatus = SENDINGFILE;
                     client.receiveProcessedSplit(workInfo[2],result);
@@ -221,7 +221,7 @@ namespace WorkerJobTracker
             }
         }
 
-        private byte[] processSplit(byte[] fileSplit)
+        private List<IList<KeyValuePair<string, string>>> processSplit(byte[] fileSplit)
         {
             //System.Threading.Thread.Sleep(5000);
             linesDone = 0;
@@ -239,12 +239,7 @@ namespace WorkerJobTracker
                 linesDone++;
             }
 
-            // Falta decidir como passar os resultados para byte[]
-
-            string str = "result";
-            byte[] bytes = new byte[str.Length * sizeof(char)];
-            System.Buffer.BlockCopy(str.ToCharArray(), 0, bytes, 0, bytes.Length);
-            return bytes;
+            return resultLines;
         }
 
         private string[] bytesToLines(byte[] fileSplit )

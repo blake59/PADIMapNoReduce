@@ -13,7 +13,7 @@ namespace PADIMapNoReduce
         byte[] getFileSplit(int startFile, int endFile);  
 
         // Worker calls to give the client the processed split
-        bool receiveProcessedSplit( int split, byte[] file);
+        bool receiveProcessedSplit( int split, List<IList<KeyValuePair<string, string>>> result);
 
         // JobTracker calls to tell the client the job is done
         void jobDone();
