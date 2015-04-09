@@ -41,12 +41,6 @@ namespace WorkerJobTracker
 
             ChannelServices.RegisterChannel(clientChannel,false);
 
-            /*
-            RemotingConfiguration.RegisterWellKnownServiceType(
-            typeof(WorkerJobTracker), "W",
-            WellKnownObjectMode.Singleton);
-            */
-
             WorkerJobTracker WJT;
 
             if (isFirst)

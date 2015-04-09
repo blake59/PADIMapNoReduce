@@ -51,6 +51,7 @@ namespace PuppetMaster
                 if (ip.AddressFamily == AddressFamily.InterNetwork)
                 {
                     localIP = ip.ToString();
+                    break;
                 }
             }
             return localIP;
@@ -87,6 +88,7 @@ namespace PuppetMaster
                 //parse line by line
                 for (int a = 0; a < filelines.Length; a++)
                 {
+                    if (filelines[a].Length == 0) continue;
                     //Comment line
                     if (filelines[a][0] == '%') continue;
                     

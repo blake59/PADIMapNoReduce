@@ -117,6 +117,7 @@ namespace UserApplication
         public void jobDone()
         {
             Console.WriteLine("Client: Job Done");
+            // probably should wait to receive all processed files
             userApplication.jobDone();
         }
     }

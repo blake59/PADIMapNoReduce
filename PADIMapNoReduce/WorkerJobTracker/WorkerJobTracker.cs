@@ -122,6 +122,16 @@ namespace WorkerJobTracker
 
             int[] workInfo = new int[3];
 
+            if (workList[nextWork].status == Work.DONE)
+            {
+                do
+                {
+                    if (++nextWork >= totalSplit)
+                        nextWork = 0;
+
+                } while (workList[nextWork].status == Work.DONE);
+            }
+
             int splitNumber = workList[nextWork].splitNumber;
             workInfo[2] = splitNumber;
             workInfo[0] = (totalBytes / totalSplit) * splitNumber;
@@ -210,13 +220,28 @@ namespace WorkerJobTracker
                     workStatus = GETTINGFILE;
                     byte[] fileSplit = client.getFileSplit(workInfo[0],workInfo[1]);
 
+                    if (!isWorkAvailable)
+                    {
+                        workStatus = VACATION;
+                        continue;
+                    }
+
                     workStatus = PROCESSINGFILE;
                     Console.WriteLine("Processing:" + workInfo[2]);
                     List<IList<KeyValuePair<string, string>>> result = processSplit(fileSplit);
 
+                    if (!isWorkAvailable)
+                    {
+                        workStatus = VACATION;
+                        continue;
+                    }
+
+
                     workStatus = SENDINGFILE;
                     client.receiveProcessedSplit(workInfo[2],result);
                     jobTracker.workDone(id,workInfo[2]);
+
+                    workStatus = GETTINGWORK;
                 }
             }
         }
@@ -276,6 +301,7 @@ namespace WorkerJobTracker
         public void workNotAvailable()
         {
             isWorkAvailable = false;
+            workStatus = VACATION;
             Console.WriteLine("rip Work");
         }
 

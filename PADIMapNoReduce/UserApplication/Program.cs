@@ -22,6 +22,7 @@ namespace UserApplication
                 if (ip.AddressFamily == AddressFamily.InterNetwork)
                 {
                     localIP = ip.ToString();
+                    break;
                 }
             }
             return localIP;
