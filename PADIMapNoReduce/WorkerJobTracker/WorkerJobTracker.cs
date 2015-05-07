@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
+using System.Threading;
 
 namespace WorkerJobTracker
 {
@@ -47,17 +48,7 @@ namespace WorkerJobTracker
             jobTracker = (WorkerJobTracker)Activator.GetObject(
                 typeof(WorkerJobTracker), JTURL);
 
-            try
-            {
                 jobTracker.addWorker(id, serviceURL);
-            }
-            catch (RemotingException ex)
-            {
-                Console.WriteLine("trying again");
-                jobTracker = (WorkerJobTracker)Activator.GetObject(
-               typeof(WorkerJobTracker), JTURL);
-                jobTracker.addWorker(id, serviceURL);
-            }
         }
 
         //
@@ -235,6 +226,8 @@ namespace WorkerJobTracker
         private WorkerJobTracker jobTracker;
         private Client client;
 
+        private Semaphore workerSem = new Semaphore(1, 1);
+
 
         // not very elegant
         public void start()
@@ -246,18 +239,10 @@ namespace WorkerJobTracker
                 if (isWorkAvailable)
                 {
                     workStatus = GETTINGWORK;
-                    int[] workInfo = null;
-                    try
-                    {
-                        workInfo = jobTracker.getWork(id);
-                    }
-                    catch (RemotingException e)
-                    {
-                        Console.WriteLine("GOT YOU");
-                        Console.ReadLine();
-                    }
+                    int[] workInfo = getWorkAux(id);
+
                     workStatus = GETTINGFILE;
-                    byte[] fileSplit = client.getFileSplit(workInfo[0],workInfo[1]);
+                    byte[] fileSplit = getFileSplitAux(workInfo[0],workInfo[1]);
 
                     if (!isWorkAvailable)
                     {
@@ -275,24 +260,72 @@ namespace WorkerJobTracker
                         continue;
                     }
 
-
                     workStatus = SENDINGFILE;
-                    client.receiveProcessedSplit(workInfo[2],result);
-                    jobTracker.workDone(id,workInfo[2]);
+                    receiveProcessedSplitAux(workInfo[2],result);
+
+                    workDoneAux(id,workInfo[2]);
 
                     workStatus = GETTINGWORK;
                 }
             }
         }
 
+        private int[] getWorkAux(int id)
+        {
+            try
+            {
+                // check if communication is blocked
+                workerSem.WaitOne();
+                workerSem.Release();    // dirty but meh
+                return jobTracker.getWork(id);
+            }
+            catch (RemotingException e)
+            {
+                // reget JobTracker
+                return getWorkAux(id);
+            }
+        }
+
+        private void workDoneAux(int id, int split)
+        {
+            try{
+                // check if communication is blocked
+                workerSem.WaitOne();
+                workerSem.Release();    // dirty but meh
+                jobTracker.workDone(id, split);
+            }
+            catch (RemotingException e)
+            {
+                workDoneAux(id,split);
+            }
+        }
+
+        private byte[] getFileSplitAux(int start, int end)
+        {
+            // check if communication is blocked
+            workerSem.WaitOne();
+            workerSem.Release();    // dirty but meh
+            return client.getFileSplit(start,end);
+        }
+
+        private void receiveProcessedSplitAux(int split,  List<IList<KeyValuePair<string, string>>> result)
+        {
+            // check if communication is blocked
+            workerSem.WaitOne();
+            workerSem.Release();    // dirty but meh
+            client.receiveProcessedSplit(split, result);
+        }
+
         private List<IList<KeyValuePair<string, string>>> processSplit(byte[] fileSplit)
         {
-            //System.Threading.Thread.Sleep(5000);
             linesDone = 0;
             List<IList<KeyValuePair<string, string>>> resultLines = new List<IList<KeyValuePair<string, string>>>();
             string[] lines = bytesToLines(fileSplit);
             foreach (string line in lines)
             {
+                // check if communication is blocked
+                workerSem.WaitOne();
+                workerSem.Release();    // dirty but meh
                 object[] args = new object[] { line };
                 object resultObject = type.InvokeMember("Map",
                   BindingFlags.Default | BindingFlags.InvokeMethod,
@@ -376,19 +409,28 @@ namespace WorkerJobTracker
         // Injects the specified delay in the worker processes with the <ID> identifier.
         public void sloww(int delay)
         {
-
+            workerSem.WaitOne();
+            System.Threading.Thread.Sleep(1000 * delay);
+            workerSem.Release();
         }
 
         //Disables the communication of a worker and pauses its map computation in order to simulate the worker’s failure.
         public void freezeW()
         {
-
+            workerSem.WaitOne();
         }
 
         //Undoes the effects of a previous FREEZEW command
         public void unfreezeW()
         {
+            workerSem.Release();
+        }
 
+        public void newJobTracker(string URL)
+        {
+            JTURL = URL;
+            jobTracker = (WorkerJobTracker)Activator.GetObject(
+            typeof(WorkerJobTracker), JTURL);
         }
 
     }
