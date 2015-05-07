@@ -38,18 +38,18 @@ namespace WorkerJobTracker
 
             TcpChannel clientChannel = new TcpChannel(port);
 
-            ChannelServices.RegisterChannel(clientChannel,false);
+            ChannelServices.RegisterChannel(clientChannel, false);
 
             WorkerJobTracker WJT;
 
             if (isFirst)
-                WJT = new WorkerJobTracker(id, serviceURL);
+                WJT = new WorkerJobTracker(id, serviceURL, clientChannel);
             else
-                WJT = new WorkerJobTracker(id, serviceURL, JTURL);
+                WJT = new WorkerJobTracker(id, serviceURL, JTURL, clientChannel);
 
 
             RemotingServices.Marshal(WJT, serviceName);
-            
+
             Console.WriteLine("Worker started");
             WJT.start();
             

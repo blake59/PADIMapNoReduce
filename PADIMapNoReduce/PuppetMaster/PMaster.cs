@@ -19,14 +19,18 @@ namespace PuppetMaster
 
         private string puppetMasterURL;
 
+        private Dictionary<int, string> workers;
+
         public PMaster(string puppetMasterURL)
         {
             this.puppetMasterURL = puppetMasterURL;
+            this.workers = new Dictionary<int,string>();
         }
 
 
         public bool createWorker(int id, string serviceURL, string entryURL)
         {
+            workers.Add(id, serviceURL);
             Process worker = new Process();
             worker.StartInfo.FileName = "..\\..\\..\\WorkerJobTracker\\bin\\Debug\\WorkerJobTracker.exe";
             worker.StartInfo.Arguments = id+" "+serviceURL+" "+entryURL;
@@ -37,6 +41,7 @@ namespace PuppetMaster
 
         public bool createWorker(int id, string serviceURL)
         {
+            workers.Add(id, serviceURL);
             Process worker = new Process();
             worker.StartInfo.FileName = "..\\..\\..\\WorkerJobTracker\\bin\\Debug\\WorkerJobTracker.exe";
             worker.StartInfo.Arguments = id +" "+ serviceURL;

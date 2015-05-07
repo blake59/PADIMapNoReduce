@@ -8,11 +8,15 @@ using PADIMapNoReduce;
 
 using System.Reflection;
 using System.Diagnostics;
+using System.Runtime.Remoting;
+using System.Runtime.Remoting.Channels;
+using System.Runtime.Remoting.Channels.Tcp;
 
 namespace WorkerJobTracker
 {
     class WorkerJobTracker : MarshalByRefObject, PADIMapNoReduce.WorkerJobTracker
     {
+        private TcpChannel tcpChannel;
 
         private string serviceURL;
         private string JTURL;
@@ -21,26 +25,39 @@ namespace WorkerJobTracker
 
         private bool working = false;
 
-        public WorkerJobTracker(int id, string serviceURL)
+        public WorkerJobTracker(int id, string serviceURL, TcpChannel clientChannel)
         {
             this.id = id;
             this.serviceURL = serviceURL;
             this.isJT = true;
+            this.tcpChannel = clientChannel;
 
             workers = new Dictionary<int, WorkerJobTracker>();
             // needs to selfAdd if he is gonna work
         }
 
-        public WorkerJobTracker(int id, string serviceURL, string JTURL)
+        public WorkerJobTracker(int id, string serviceURL, string JTURL, TcpChannel clientChannel)
         {
             this.id = id;
             this.serviceURL = serviceURL;
             this.JTURL = JTURL;
             this.isJT = false;
+            this.tcpChannel = clientChannel;
 
             jobTracker = (WorkerJobTracker)Activator.GetObject(
                 typeof(WorkerJobTracker), JTURL);
-            jobTracker.addWorker(id, serviceURL);
+
+            try
+            {
+                jobTracker.addWorker(id, serviceURL);
+            }
+            catch (RemotingException ex)
+            {
+                Console.WriteLine("trying again");
+                jobTracker = (WorkerJobTracker)Activator.GetObject(
+               typeof(WorkerJobTracker), JTURL);
+                jobTracker.addWorker(id, serviceURL);
+            }
         }
 
         //
@@ -183,6 +200,21 @@ namespace WorkerJobTracker
             }
         }
 
+        //Disables the communication of the job tracker aspect of a worker node in order to simulate its failures.
+        public void freezeC()
+        {
+            if(isJT)
+                ChannelServices.UnregisterChannel(tcpChannel);
+        }
+
+        //Undoes the effects of a previous FREEZEC command
+        public void unfreezeC()
+        {
+            if (isJT)
+                ChannelServices.RegisterChannel(tcpChannel,false);
+                //MIGHT NEED TO RE-MARSHAL THE OBJECT
+        }
+
         //
         // Worker
         //
@@ -214,7 +246,16 @@ namespace WorkerJobTracker
                 if (isWorkAvailable)
                 {
                     workStatus = GETTINGWORK;
-                    int[] workInfo = jobTracker.getWork(id);
+                    int[] workInfo = null;
+                    try
+                    {
+                        workInfo = jobTracker.getWork(id);
+                    }
+                    catch (RemotingException e)
+                    {
+                        Console.WriteLine("GOT YOU");
+                        Console.ReadLine();
+                    }
                     workStatus = GETTINGFILE;
                     byte[] fileSplit = client.getFileSplit(workInfo[0],workInfo[1]);
 
@@ -330,6 +371,24 @@ namespace WorkerJobTracker
                 }
             }
             return mapper;
+        }
+
+        // Injects the specified delay in the worker processes with the <ID> identifier.
+        public void sloww(int delay)
+        {
+
+        }
+
+        //Disables the communication of a worker and pauses its map computation in order to simulate the worker’s failure.
+        public void freezeW()
+        {
+
+        }
+
+        //Undoes the effects of a previous FREEZEW command
+        public void unfreezeW()
+        {
+
         }
 
     }

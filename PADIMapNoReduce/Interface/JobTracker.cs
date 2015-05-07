@@ -22,5 +22,11 @@ namespace PADIMapNoReduce
 
         // Prints the status to the console
         void status();
+
+        //Disables the communication of the job tracker aspect of a worker node in order to simulate its failures.
+        void freezeC();
+
+        //Undoes the effects of a previous FREEZEC command
+        void unfreezeC();
     }
 }
