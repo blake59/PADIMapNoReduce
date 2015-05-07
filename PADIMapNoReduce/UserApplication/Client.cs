@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 using PADIMapNoReduce;
 
@@ -56,7 +55,7 @@ namespace UserApplication
         // WARNING: cliente precisa de passar linhas inteiras
         public byte[] getFileSplit(int startFile, int endFile)
         {
-            Console.WriteLine("Client: GetFileSplit");
+            Console.WriteLine("Client: GetFileSplit start:" + startFile + " end:" + endFile + " totalSize:" + file.Length);
             Byte[] fileSplit;
 
             while ( startFile != 0 && Convert.ToChar(file[startFile-1]) != '\n')

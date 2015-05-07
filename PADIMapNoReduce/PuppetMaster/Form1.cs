@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
+using System.Diagnostics;
 using System.Windows.Forms;
 
 using System.Runtime.Remoting;
@@ -16,7 +16,6 @@ using System.Runtime.Remoting.Channels.Tcp;
 using System.Net;
 using System.Net.Sockets;
 using PADIMapNoReduce;
-using System.Diagnostics;
 
 /*
 using System.Diagnostics;

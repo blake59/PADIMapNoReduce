@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 using PADIMapNoReduce;
 
@@ -43,7 +42,7 @@ namespace UserApplication
             channel = new TcpChannel(10001);
             ChannelServices.RegisterChannel(channel, false);
 
-            client = new Client(WorkerEntryURL, "tcp://"+Program.getIP()+":10001/C",this);
+            client = new Client(WorkerEntryURL, "tcp://"+"localhost"+":10001/C",this);
 
             RemotingServices.Marshal(client, "C");
         }

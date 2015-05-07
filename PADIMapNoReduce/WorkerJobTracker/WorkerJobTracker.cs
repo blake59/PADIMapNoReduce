@@ -3,8 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-
 
 using PADIMapNoReduce;
 
@@ -135,7 +133,7 @@ namespace WorkerJobTracker
             int splitNumber = workList[nextWork].splitNumber;
             workInfo[2] = splitNumber;
             workInfo[0] = (totalBytes / totalSplit) * splitNumber;
-            workInfo[1] = (totalBytes / totalSplit) * (splitNumber + 1);
+            workInfo[1] = (totalBytes / totalSplit) * (splitNumber + 1) - 1;
 
             workList[nextWork].status = Work.INPROGRESS;
             workList[nextWork].workerId = id;

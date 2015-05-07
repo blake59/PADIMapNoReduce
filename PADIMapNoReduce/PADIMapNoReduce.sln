@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PuppetMaster", "PuppetMaste
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibMapper", "LibMapper\LibMapper.csproj", "{0DA7E444-CA3B-4A13-A270-52635FE5F5B0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibMapperParadiseCount", "LibMapperParadiseCount\LibMapperParadiseCount.csproj", "{F9189792-5B7F-4489-89D9-DCC1339D2E70}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibMapperCharCount", "LibMapperCharCount\LibMapperCharCount.csproj", "{2D012EC4-B199-4802-A447-CFB320D5FE14}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +43,14 @@ Global
 		{0DA7E444-CA3B-4A13-A270-52635FE5F5B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0DA7E444-CA3B-4A13-A270-52635FE5F5B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0DA7E444-CA3B-4A13-A270-52635FE5F5B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9189792-5B7F-4489-89D9-DCC1339D2E70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9189792-5B7F-4489-89D9-DCC1339D2E70}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9189792-5B7F-4489-89D9-DCC1339D2E70}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9189792-5B7F-4489-89D9-DCC1339D2E70}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D012EC4-B199-4802-A447-CFB320D5FE14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D012EC4-B199-4802-A447-CFB320D5FE14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D012EC4-B199-4802-A447-CFB320D5FE14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D012EC4-B199-4802-A447-CFB320D5FE14}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
