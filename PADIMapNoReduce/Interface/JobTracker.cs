@@ -7,6 +7,7 @@ namespace PADIMapNoReduce
 {
     public interface JobTracker
     {
+
         // Worker calls to tell the JobTracker he was created
         void addWorker(int id, string workerURL);
 
@@ -28,5 +29,7 @@ namespace PADIMapNoReduce
 
         //Undoes the effects of a previous FREEZEC command
         void unfreezeC();
+
+        void sendHeartbeat();
     }
 }

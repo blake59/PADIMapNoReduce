@@ -37,6 +37,7 @@ namespace WorkerJobTracker
             string serviceName = aux[5];
 
             TcpChannel clientChannel = new TcpChannel(port);
+            //TcpChannel clientChannel2 = new TcpChannel();
 
             ChannelServices.RegisterChannel(clientChannel, false);
 
@@ -49,6 +50,7 @@ namespace WorkerJobTracker
 
 
             RemotingServices.Marshal(WJT, serviceName);
+
 
             Console.WriteLine("Worker started");
             WJT.start();

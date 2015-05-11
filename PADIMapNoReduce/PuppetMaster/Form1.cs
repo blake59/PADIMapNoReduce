@@ -38,6 +38,7 @@ namespace PuppetMaster
         private TcpChannel channel;
         private PMaster puppetMaster;
         private string jobTrackerUrl;
+        private Dictionary<int, string> workers;
 
         // Returns IP ( not the street IP)
         public static string getIP()
@@ -62,6 +63,7 @@ namespace PuppetMaster
             portTB.Text = Convert.ToString(PORT);
             AddToLog("Welcome to PuppetMaster");
             AddToLog("Please insert a valid Port Number to start");
+            workers = new Dictionary<int, string>();
             
         }
 
@@ -247,6 +249,7 @@ namespace PuppetMaster
         {
             String command = "WORKER " + id + " " + puppetUrl + " " + serviceUrl;
 
+            workers.Add(id, serviceUrl);
             jobTrackerUrl = serviceUrl;
             //TODO add code here
             IPuppetMaster pm = (IPuppetMaster)Activator.GetObject(typeof(IPuppetMaster), puppetUrl);
@@ -291,32 +294,32 @@ namespace PuppetMaster
         {
             String command = "STATUS";
             AddToLog(command);
-            ((WorkerJobTracker)Activator.GetObject(typeof(WorkerJobTracker), jobTrackerUrl)).status();
-            //TODO add code here
+            ((IWorkerJobTracker)Activator.GetObject(typeof(IWorkerJobTracker), jobTrackerUrl)).status();
         }
 
         private void slowwCmd(int id, int delay)
         {
             String command = "SLOWW " + id + " " + delay;
             AddToLog(command);
-            
-            //TODO add code here
+
+            ((IWorkerJobTracker)Activator.GetObject(typeof(IWorkerJobTracker), workers[id])).slowW(delay);
         }
 
         private void freezewCmd(int id)
         {
             String command = "FREEZEW " + id;
             AddToLog(command);
-            
-            //TODO add code here
+
+            ((IWorkerJobTracker)Activator.GetObject(typeof(IWorkerJobTracker), workers[id])).freezeW();
+
         }
 
         private void unfreezewCmd(int id)
         {
             String command = "UNFREEZEW " + id;
             AddToLog(command);
-            
-            //TODO add code here
+
+            ((IWorkerJobTracker)Activator.GetObject(typeof(IWorkerJobTracker), workers[id])).unfreezeW();
         }
 
         private void freezecCmd(int id)
@@ -324,15 +327,15 @@ namespace PuppetMaster
             String command = "FREEZEC " + id;
             AddToLog(command);
             
-            //TODO add code here
+            ((IWorkerJobTracker)Activator.GetObject(typeof(IWorkerJobTracker), workers[id])).freezeC();
         }
 
         private void unfreezecCmd(int id)
         {
             String command = "UNFREEZEC " + id;
             AddToLog(command);
-            
-            //TODO add code here
+
+            ((IWorkerJobTracker)Activator.GetObject(typeof(IWorkerJobTracker), workers[id])).unfreezeC();
         }
 
         private void puppetMasterTB_TextChanged(object sender, EventArgs e)

@@ -39,8 +39,8 @@ namespace UserApplication
             this.totalSplits = numberSplits;
             splitsDone = new bool[numberSplits];
             
-            WorkerJobTracker jobTracker = (WorkerJobTracker)Activator.GetObject(
-                typeof(WorkerJobTracker), WorkerEntryURL);
+            IWorkerJobTracker jobTracker = (IWorkerJobTracker)Activator.GetObject(
+                typeof(IWorkerJobTracker), WorkerEntryURL);
 
             jobTracker.startJob(numberSplits, className, dll, selfURL, file.Length);
 

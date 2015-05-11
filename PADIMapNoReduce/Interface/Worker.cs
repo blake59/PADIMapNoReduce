@@ -17,7 +17,7 @@ namespace PADIMapNoReduce
         void workerStatus();
 
         // Injects the specified delay in the worker processes with the <ID> identifier.
-        void sloww(int delay);
+        void slowW(int delay);
 
         //Disables the communication of a worker and pauses its map computation in order to simulate the worker’s failure.
         void freezeW();
@@ -26,9 +26,12 @@ namespace PADIMapNoReduce
         void unfreezeW();
 
         void newJobTracker(string URL);
+
+        void fullReplication(ReplicatedInfo replicatedInfo);
+        //void fullReplication(); 
     }
 
-    public interface WorkerJobTracker : Worker, JobTracker
+    public interface IWorkerJobTracker : Worker, JobTracker
     {
 
     }
