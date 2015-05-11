@@ -40,7 +40,6 @@ namespace WorkerJobTracker
             this.tcpChannel = clientChannel;
 
             replicatedInfo = new ReplicatedInfo();
-            replicatedInfo2 = new ReplicatedInfo2();
 
             replicatedInfo.workers = new Dictionary<int, string>();
 
@@ -73,9 +72,9 @@ namespace WorkerJobTracker
         //
 
         private IWorkerJobTracker secondary = null;
+        private int secondaryID = 0;
 
         private ReplicatedInfo replicatedInfo;
-        private ReplicatedInfo2 replicatedInfo2;
         /*
         private int totalBytes;
         private string mapperClassName;
@@ -94,8 +93,6 @@ namespace WorkerJobTracker
         // Worker calls to tell the JobTracker he was created
         public void addWorker(int id, string workerURL)
         {
-            if (!isJT)
-                return;
 
             JTsemaphore.WaitOne();
             JTsemaphore.Release();
@@ -103,14 +100,17 @@ namespace WorkerJobTracker
 
             Console.WriteLine("ADDED worker:" + id);
             replicatedInfo.workers.Add(id, workerURL);
+
+            if (secondary != null)
+            {
+                secondary.addWorker(id, workerURL);
+            }
             
         }
 
         // Client calls to give a job to the jobTracker
         public void startJob(int totalSplit, string mapperClassName, byte[] dll, string clientURL, int totalBytes)
         {
-            if (!isJT)
-                return;
 
             JTsemaphore.WaitOne();
             JTsemaphore.Release();
@@ -129,6 +129,8 @@ namespace WorkerJobTracker
                 replicatedInfo.workList.Add(i, work);
             }
             replicatedInfo.nextWork = 0;
+            if(secondary != null)
+                secondary.fullReplication(replicatedInfo);
 
             foreach (string w in replicatedInfo.workers.Values)
             {
@@ -144,8 +146,6 @@ namespace WorkerJobTracker
         public delegate int[] getWorkDelegate(int id);
         public int[] getWork(int id)
         {
-            if (!isJT)
-                return null;
 
             JTsemaphore.WaitOne();
             JTsemaphore.Release();
@@ -189,8 +189,6 @@ namespace WorkerJobTracker
         public delegate void workDoneDelegate(int id, int splitnumber);
         public void workDone(int id, int splitnumber)   // FIX ME
         {
-            if (!isJT)
-                return;
 
             if (replicatedInfo.workList[splitnumber].status != Work.DONE)
             {
@@ -215,8 +213,6 @@ namespace WorkerJobTracker
         // Prints the status to the console
         public void status()
         {
-            if (!isJT)
-                return;
 
             JTsemaphore.WaitOne();
             JTsemaphore.Release();
@@ -233,22 +229,17 @@ namespace WorkerJobTracker
         //Disables the communication of the job tracker aspect of a worker node in order to simulate its failures.
         public void freezeC()
         {
-            if (isJT)
-            {
-                Console.WriteLine("Freezing");
-                JTsemaphore.WaitOne();
-            }
+
+            Console.WriteLine("Freezing");
+            JTsemaphore.WaitOne();
         }
 
         //Undoes the effects of a previous FREEZEC command
         public void unfreezeC()
         {
+            Console.WriteLine("Unfreezing");
+            JTsemaphore.Release();
 
-            if (isJT)
-            {
-                Console.WriteLine("Unfreezing");
-                JTsemaphore.Release();
-            }
         }
 
         //
@@ -504,6 +495,7 @@ namespace WorkerJobTracker
 
         public void newJobTracker(string URL)
         {
+            Console.WriteLine("GOT NEW BOSS " + URL);
             JTURL = URL;
             jobTracker = (IWorkerJobTracker)Activator.GetObject(
             typeof(IWorkerJobTracker), JTURL);
@@ -514,13 +506,13 @@ namespace WorkerJobTracker
         private bool beating = false;
         public void fullReplication( ReplicatedInfo replicatedInfo ) 
         {
-            Console.WriteLine("I AM NOW SECONDARY URAYYY");
-            return;
+            
 
-            //this.replicatedInfo.workers = replicatedInfo;
+            this.replicatedInfo = replicatedInfo;
 
             if (!beating)
             {
+                Console.WriteLine("I AM NOW SECONDARY URAYYY");
                 lastPrimaryHeartBeat = DateTime.Now;
                 // start heartbeats
                 heartbeatDelegate del = new heartbeatDelegate(heartbeat);
@@ -530,27 +522,32 @@ namespace WorkerJobTracker
 
         }
 
-        private const int HEARTBEATTIMEOUT = 2;
+        private const int HEARTBEATTIMEOUT = 4;
         private int heartbeatDelay = 1;
         private DateTime lastPrimaryHeartBeat;
+        private bool outOfJT = false;
         public delegate void heartbeatDelegate();
         public void heartbeat()
         {
-            Console.WriteLine("heartBeat");
-            if ( isJT && replicatedInfo.workers.Count > 1 && secondary == null)
+            JTsemaphore.WaitOne();
+            JTsemaphore.Release();
+            //Console.WriteLine("heartBeat");
+            if ( isJT && replicatedInfo.workers.Count > 1 && secondary == null && !outOfJT)
             {
-                IWorkerJobTracker worker = (IWorkerJobTracker)Activator.GetObject(typeof(IWorkerJobTracker), replicatedInfo.workers[2]);
+                int newSecondaryID = id + 1;
+                if (newSecondaryID > replicatedInfo.workers.Count)
+                    newSecondaryID = 1;
+                IWorkerJobTracker worker = (IWorkerJobTracker)Activator.GetObject(typeof(IWorkerJobTracker), replicatedInfo.workers[newSecondaryID]);
                 worker.fullReplication(replicatedInfo);
+                secondaryID = newSecondaryID;
                 secondary = worker;
                 Console.WriteLine("creating secondary");   
                 
             } else if (isJT && secondary != null)
             {
                 Console.WriteLine("sending heartbeat");
-                sendHeartbeatDelegator del = new sendHeartbeatDelegator(secondary.sendHeartbeat);
 
-                JTsemaphore.WaitOne();
-                JTsemaphore.Release();
+                sendHeartbeatDelegator del = new sendHeartbeatDelegator(secondary.sendHeartbeat);
                 IAsyncResult result = del.BeginInvoke(null, null);
 
                 DateTime time = DateTime.Now;
@@ -559,15 +556,102 @@ namespace WorkerJobTracker
                     if ((DateTime.Now - time).TotalMilliseconds > HEARTBEATTIMEOUT * 1000)
                     {
                        //replace secondary
+                        Console.WriteLine("RIP secondary Count: " + replicatedInfo.workers.Count);
+                        if (replicatedInfo.workers.Count < 3)
+                        {
+                            outOfJT = true;
+                            secondary = null;
+                            secondaryID = 0;
+                            break;
+                        }
+                        else
+                        {
+                            int newSecondaryID = id + 2;
+                            if (newSecondaryID > replicatedInfo.workers.Count)
+                                newSecondaryID = 1;
+
+                            IWorkerJobTracker worker = (IWorkerJobTracker)Activator.GetObject(typeof(IWorkerJobTracker), replicatedInfo.workers[newSecondaryID]);
+                            worker.fullReplication(replicatedInfo);
+                            secondaryID = newSecondaryID;
+                            secondary = worker;
+                            Console.WriteLine("created new secondary");
+                            break;
+                        }
                     }
                 }
+                if (result.IsCompleted)
+                {
+                    bool stillprimary = del.EndInvoke(result);
+                    if (!stillprimary)
+                    {
+                        replicatedInfo = null;
+                        isJT = false;
+                        secondary = null;
+                        beating = false;
+                        Console.WriteLine("Lost primary :C ");
+                        return;
+                    }
+                }
+
             }
             else if(!isJT && secondary == null)
             {
-                Console.WriteLine("checking on secundary");
+                Console.WriteLine("checking on primary " + (DateTime.Now - lastPrimaryHeartBeat).TotalMilliseconds);
                 if((DateTime.Now - lastPrimaryHeartBeat).TotalMilliseconds > HEARTBEATTIMEOUT * 1000)
                 {
-                    // replace primary
+
+                    areYouAliveDelegate del = new areYouAliveDelegate(jobTracker.areYouAlive);
+                    IAsyncResult result = del.BeginInvoke(id, null, null);
+
+                    DateTime time = DateTime.Now;
+
+                    while (!result.IsCompleted)
+                    {
+                        if ((DateTime.Now - time).TotalMilliseconds > HEARTBEATTIMEOUT/2 * 1000)
+                        {
+                            // replace primary
+                            Console.WriteLine("RIP PRIMARY Count: " + replicatedInfo.workers.Count);
+                            if (replicatedInfo.workers.Count < 3)
+                            {
+                                outOfJT = true;
+                                isJT = true;
+                                foreach (string w in replicatedInfo.workers.Values)
+                                {
+                                    ((IWorkerJobTracker)Activator.GetObject(typeof(IWorkerJobTracker), w)).newJobTracker(serviceURL);
+                                }
+                                Console.WriteLine("created no secondary");   
+                                break;
+                            }
+                            else
+                            {
+                                int newSecondaryID = id + 1;
+                                if (newSecondaryID > replicatedInfo.workers.Count)
+                                    newSecondaryID = 1;
+
+                                IWorkerJobTracker worker = (IWorkerJobTracker)Activator.GetObject(typeof(IWorkerJobTracker), replicatedInfo.workers[newSecondaryID]);
+                                worker.fullReplication(replicatedInfo);
+                                secondaryID = newSecondaryID;
+                                secondary = worker;
+                                isJT = true;
+                                foreach (string w in replicatedInfo.workers.Values)
+                                {
+
+                                    ((IWorkerJobTracker)Activator.GetObject(typeof(IWorkerJobTracker), w)).newJobTracker(serviceURL);
+                                }
+                                Console.WriteLine("created new secondary");   
+                            }
+                        }
+                    }
+                    if (result.IsCompleted)
+                    {
+                        bool stillSecondary = del.EndInvoke(result);
+                        if (!stillSecondary)
+                        {
+                            beating = false;
+                            replicatedInfo = null;
+                            return;
+                        }
+                    }
                 }
             }
 
@@ -575,11 +659,47 @@ namespace WorkerJobTracker
             heartbeat();
         }
 
-        public delegate void sendHeartbeatDelegator();
-        public void sendHeartbeat()
+        /* primary sends heartbeat
+         * in case primary is recovering he can check the return
+         * if the return is true then he is still primary 
+         * else he is no longer the primary
+        */
+        public delegate bool sendHeartbeatDelegator();
+        public bool sendHeartbeat()
         {
+            JTsemaphore.WaitOne();
+            JTsemaphore.Release();
+            if (isJT)
+            {
+                outOfJT = false;
+                return false;
+            }
             lastPrimaryHeartBeat = DateTime.Now;
             Console.WriteLine("bump bump");
+            return true;
+
+        }
+
+        /* secondary asks if primary still alive
+         * if he is and secondary is still secondary is still secondary return true
+         * if he is and secondary is not secondary anymore return false;
+        */
+        public delegate bool areYouAliveDelegate(int id);
+        public bool areYouAlive(int id)
+        {
+            JTsemaphore.WaitOne();
+            JTsemaphore.Release();
+
+            if (secondaryID == id)
+                return true;
+            else if (secondaryID == 0)
+            {
+                outOfJT = false;
+                return false;
+            }
+            else
+                return false;
+
         }
 
     }

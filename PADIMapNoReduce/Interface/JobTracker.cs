@@ -30,6 +30,8 @@ namespace PADIMapNoReduce
         //Undoes the effects of a previous FREEZEC command
         void unfreezeC();
 
-        void sendHeartbeat();
+        bool sendHeartbeat();
+
+        bool areYouAlive(int id);
     }
 }

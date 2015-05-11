@@ -261,7 +261,8 @@ namespace PuppetMaster
         private void workerCmd(int id, string puppetUrl, string serviceUrl, string entryUrl)
         {
             String command = "WORKER " + id + " " + puppetUrl + " " + serviceUrl + " " + entryUrl;
-         
+
+            workers.Add(id, serviceUrl);
             //TODO add code here
             IPuppetMaster pm = (IPuppetMaster)Activator.GetObject(typeof(IPuppetMaster), puppetUrl);
             if (pm.createWorker(id, serviceUrl, entryUrl)) AddToLog(command);

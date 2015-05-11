@@ -51,7 +51,6 @@
     <Compile Include="JobTracker.cs" />
     <Compile Include="Client.cs" />
     <Compile Include="IPuppetMaster.cs" />
-    <Compile Include="ReplicatedInfo - Copy.cs" />
     <Compile Include="ReplicatedInfo.cs" />
     <Compile Include="Work.cs" />
     <Compile Include="Worker.cs" />
