@@ -156,7 +156,7 @@ namespace WorkerJobTracker
             {
                 do
                 {
-                    if (++replicatedInfo.nextWork >= replicatedInfo.totalSplit)
+                    if (++(replicatedInfo.nextWork) >= replicatedInfo.totalSplit)
                         replicatedInfo.nextWork = 0;
 
                 } while (replicatedInfo.workList[replicatedInfo.nextWork].status == Work.DONE);
@@ -202,7 +202,11 @@ namespace WorkerJobTracker
 
                 foreach (string w in replicatedInfo.workers.Values)
                 {
-                    ((IWorkerJobTracker)Activator.GetObject(typeof(IWorkerJobTracker), w)).workNotAvailable();
+
+                    IWorkerJobTracker worker = ((IWorkerJobTracker)Activator.GetObject(typeof(IWorkerJobTracker), w));
+                    workNotAvailableDelegate del = new workNotAvailableDelegate(worker.workNotAvailable);
+                    IAsyncResult result = del.BeginInvoke(null, null);
+
                 }
             }
 
@@ -211,6 +215,7 @@ namespace WorkerJobTracker
         }
 
         // Prints the status to the console
+        private const int WORKERSTATUSTIMEOUT = 2;
         public void status()
         {
 
@@ -218,12 +223,28 @@ namespace WorkerJobTracker
             JTsemaphore.Release();
 
             Console.WriteLine("Job Tracker Status");
-            Console.WriteLine("Workers Active:" + replicatedInfo.workers.Count);
+            Console.WriteLine("Secondary is " + secondaryID);
+            int count = replicatedInfo.workers.Count;
 
             foreach (string w in replicatedInfo.workers.Values)
             {
-                ((IWorkerJobTracker)Activator.GetObject(typeof(IWorkerJobTracker), w)).workerStatus();
+                IWorkerJobTracker worker = ((IWorkerJobTracker)Activator.GetObject(typeof(IWorkerJobTracker), w));
+                workerStatusDelegate del = new workerStatusDelegate(worker.workerStatus);
+                IAsyncResult result = del.BeginInvoke(null, null);
+
+                    DateTime time = DateTime.Now;
+
+                    while (!result.IsCompleted)
+                    {
+                        if ((DateTime.Now - time).TotalMilliseconds > WORKERSTATUSTIMEOUT * 1000)
+                        {
+                            count--;
+                            break;
+                        }
+                    }
             }
+
+            Console.WriteLine("Workers Active:" + count);
         }
 
         //Disables the communication of the job tracker aspect of a worker node in order to simulate its failures.
@@ -424,6 +445,8 @@ namespace WorkerJobTracker
         // JobTracker calls to inform the worker he can ask for work
         public void workAvailable(string clientURL, string mapperClassName, byte[] dll)
         {
+            workerSem.WaitOne();
+            workerSem.Release(); 
             this.clientURL = clientURL;
             this.mapper = createMapper(mapperClassName, dll);
             client = (Client)Activator.GetObject(typeof(Client), clientURL);
@@ -433,16 +456,22 @@ namespace WorkerJobTracker
         }
 
         //  JobTracker calls to inform the worker that there is no more work
+        public delegate void workNotAvailableDelegate();
         public void workNotAvailable()
         {
+            workerSem.WaitOne();
+            workerSem.Release(); 
             isWorkAvailable = false;
             workStatus = VACATION;
             Console.WriteLine("rip Work");
         }
 
         // prints to the console the status
+        public delegate void workerStatusDelegate();
         public void workerStatus()
         {
+            workerSem.WaitOne();
+            workerSem.Release(); 
             if (workStatus == PROCESSINGFILE)
                 Console.WriteLine(workStatus + " " + linesDone + "/" + linesTotal);
             else
@@ -495,6 +524,8 @@ namespace WorkerJobTracker
 
         public void newJobTracker(string URL)
         {
+            workerSem.WaitOne();
+            workerSem.Release(); 
             Console.WriteLine("GOT NEW BOSS " + URL);
             JTURL = URL;
             jobTracker = (IWorkerJobTracker)Activator.GetObject(
