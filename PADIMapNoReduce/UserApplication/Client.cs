@@ -113,9 +113,14 @@ namespace UserApplication
         }
 
         // JobTracker calls to tell the client the job is done
+        private bool isJobDone = false;
         public void jobDone()
         {
-            Console.WriteLine("Client: Job Done");
+            if (!isJobDone)
+            {
+                Console.WriteLine("Client: Job Done");
+                isJobDone = true;
+            }
             // probably should wait to receive all processed files
             userApplication.jobDone();
         }

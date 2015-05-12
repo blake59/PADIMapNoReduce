@@ -460,10 +460,13 @@ namespace WorkerJobTracker
         public void workNotAvailable()
         {
             workerSem.WaitOne();
-            workerSem.Release(); 
-            isWorkAvailable = false;
-            workStatus = VACATION;
-            Console.WriteLine("rip Work");
+            workerSem.Release();
+            if (isWorkAvailable)
+            {
+                isWorkAvailable = false;
+                workStatus = VACATION;
+                Console.WriteLine("rip Work");
+            }
         }
 
         // prints to the console the status
