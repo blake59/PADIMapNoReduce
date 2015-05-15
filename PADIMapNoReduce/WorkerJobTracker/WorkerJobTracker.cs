@@ -672,7 +672,8 @@ namespace WorkerJobTracker
 
                                     ((IWorkerJobTracker)Activator.GetObject(typeof(IWorkerJobTracker), w)).newJobTracker(serviceURL);
                                 }
-                                Console.WriteLine("created new secondary");   
+                                Console.WriteLine("created new secondary");
+                                break;
                             }
                         }
                     }
